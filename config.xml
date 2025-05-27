@@ -3,6 +3,16 @@
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:cdv="http://cordova.apache.org/ns/1.0">
 
+    <name>Ipfetch</name>
+
+    <description>
+        A custom Cordova app built from HTML, CSS, and JavaScript to fetch ip info.
+    </description>
+
+    <author email="yourname@example.com" href="https://yourwebsite.com">
+        ipConfigInfo
+    </author>
+
     <content src="index.html" />
     
     <!-- Allow navigation to any web resource -->
@@ -13,6 +23,22 @@
     <allow-intent href="https://*/*" />
 
     <!-- General Preferences -->
+    <preference name="Orientation" value="portrait" />
     
+    <!-- Android specific configuration -->
+    <platform name="android">
+        <!-- Allow all origins -->
+        <access origin="*" />
+
+        <!-- Internet permission -->
+        <edit-config file="AndroidManifest.xml" mode="merge"
+            target="/manifest/uses-permission[@android:name='android.permission.INTERNET']">
+            <uses-permission android:name="android.permission.INTERNET" />
+        </edit-config>
+
+        <!-- Optional: set app name explicitly -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:label="MyApp" />
+        </edit-config>
     </platform>
 </widget>
