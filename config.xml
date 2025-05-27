@@ -6,7 +6,7 @@
     <name>Ipfetch</name>
 
     <description>
-        A custom Cordova app built from HTML, CSS, and JavaScript to fetch ip info.
+        A custom Cordova app built from HTML, CSS, and JavaScript to fetch IP info.
     </description>
 
     <author email="yourname@example.com" href="https://yourwebsite.com">
@@ -14,7 +14,7 @@
     </author>
 
     <content src="index.html" />
-    
+
     <!-- Allow navigation to any web resource -->
     <allow-navigation href="*" />
 
@@ -24,21 +24,25 @@
 
     <!-- General Preferences -->
     <preference name="Orientation" value="portrait" />
-    
+    <preference name="Fullscreen" value="false" />
+    <preference name="SplashScreenDelay" value="2000" />
+    <preference name="FadeSplashScreenDuration" value="500" />
+    <preference name="SplashScreen" value="screen" />
+    <preference name="AutoHideSplashScreen" value="true" />
+
     <!-- Android specific configuration -->
     <platform name="android">
         <!-- Allow all origins -->
         <access origin="*" />
 
-        <!-- Internet permission -->
-        <edit-config file="AndroidManifest.xml" mode="merge"
-            target="/manifest/uses-permission[@android:name='android.permission.INTERNET']">
+        <!-- Internet permission (fixed syntax) -->
+        <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.INTERNET" />
-        </edit-config>
+        </config-file>
 
-        <!-- Optional: set app name explicitly -->
+        <!-- Optional: override app label -->
         <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application">
-            <application android:label="MyApp" />
+            <application android:label="Ipfetch" />
         </edit-config>
     </platform>
 </widget>
