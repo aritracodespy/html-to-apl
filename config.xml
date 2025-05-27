@@ -3,16 +3,6 @@
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:cdv="http://cordova.apache.org/ns/1.0">
 
-    <name>MyApp</name>
-
-    <description>
-        A custom Cordova app that fetch ip information, built from HTML, CSS, and JavaScript.
-    </description>
-
-    <author email="yourname@example.com" href="https://yourwebsite.com">
-        Your Name or Company
-    </author>
-
     <content src="index.html" />
     
     <!-- Allow navigation to any web resource -->
@@ -23,26 +13,6 @@
     <allow-intent href="https://*/*" />
 
     <!-- General Preferences -->
-    <preference name="Orientation" value="portrait" />
-    <preference name="Fullscreen" value="false" />
-    <preference name="SplashScreenDelay" value="2000" />
-    <preference name="FadeSplashScreenDuration" value="500" />
-    <preference name="SplashScreen" value="screen" />
-
-    <!-- Android specific configuration -->
-    <platform name="android">
-        <!-- Allow all origins -->
-        <access origin="*" />
-
-        <!-- Internet permission -->
-        <edit-config file="AndroidManifest.xml" mode="merge"
-            target="/manifest/uses-permission[@android:name='android.permission.INTERNET']">
-            <uses-permission android:name="android.permission.INTERNET" />
-        </edit-config>
-
-        <!-- Optional: set app name explicitly -->
-        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application">
-            <application android:label="MyIpFetch" />
-        </edit-config>
+    
     </platform>
 </widget>
