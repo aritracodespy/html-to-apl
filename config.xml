@@ -3,7 +3,7 @@
     <name>EditHTML</name>
     <description>Sample Apache Cordova App for EDIT single html file.</description>
     <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
-        Apache Cordova Team
+        Aritracodespy.
     </author>
     <content src="index.html" />
     <allow-intent href="http://*/*" />
