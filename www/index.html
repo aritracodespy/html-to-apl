@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML Code Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 75vh;
+      font-family: monospace;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 10px;
+      width:32%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Write HTML Code</h1>
+  <textarea wrap="on" id="htmlInput" placeholder="Write your HTML here..."></textarea><br>
+  <button onclick="submitCode()">Submit</button>
+  <button onclick="clearCode()">Clear</button>
+  <button onclick="copyCode()">Copy</button>
+
+  <script>
+    // Load saved code if available
+    window.onload = function () {
+      const savedCode = localStorage.getItem("userHTML");
+      if (savedCode) {
+        document.getElementById("htmlInput").value = savedCode;
+      }
+    };
+
+    // Save and go to preview
+    function submitCode() {
+      const code = document.getElementById("htmlInput").value;
+      localStorage.setItem("userHTML", code);
+      window.location.href = "preview.html";
+    }
+
+    // Clear textarea and localStorage
+    function clearCode() {
+      document.getElementById("htmlInput").value = "";
+      localStorage.removeItem("userHTML");
+    }
+  
+    function copyCode(){
+      const text = document.getElementById("htmlInput").value;
+      navigator.clipboard.writeText(text);
+    }
+  </script>
+</body>
+</html>
