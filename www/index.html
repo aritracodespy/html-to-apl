@@ -9,7 +9,16 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+    }
+
+    body.light {
       background: #f4f4f4;
+      color: #000;
+    }
+
+    body.dark {
+      background: #121212;
+      color: #fff;
     }
 
     header {
@@ -17,6 +26,20 @@
       color: white;
       padding: 10px 20px;
       text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    #theme-toggle {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     #main-section, #edit-section {
@@ -29,6 +52,13 @@
       padding: 10px;
       margin-bottom: 10px;
       border-radius: 5px;
+      color: black;
+    }
+
+    body.dark .note-item {
+      background: #1e1e1e;
+      color: white;
+      border: 1px solid #444;
     }
 
     .note-item button {
@@ -38,15 +68,28 @@
     #note-list {
       margin-top: 20px;
     }
+
     #edit-section {
       width: 85vw;
     }
 
-    #edit-section input, #edit-section textarea {
+    #edit-section input,
+    #edit-section textarea {
       width: 100%;
       margin-bottom: 10px;
       padding: 10px;
       font-size: 16px;
+      background: inherit;
+      color: inherit;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    body.dark #edit-section input,
+    body.dark #edit-section textarea {
+      background: #222;
+      border-color: #555;
+      color: #fff;
     }
 
     #edit-section textarea {
@@ -61,9 +104,9 @@
     .buttons button {
       padding: 10px;
       font-size: 16px;
-      width:30vw;
+      width: 30vw;
     }
-  
+
     .title-box {
       display: flex;
       justify-content: space-between;
@@ -76,6 +119,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      cursor: pointer;
     }
 
     .btn-box {
@@ -84,12 +128,18 @@
       gap: 5px;
       white-space: nowrap;
     }
-  
+
     .note-content {
       margin: 10px;
       padding: 10px;
       white-space: pre-wrap;
       border: 1px solid black;
+    }
+
+    body.dark .note-content {
+      border-color: #666;
+      background: #2a2a2a;
+      color: #fff;
     }
 
     .hidden {
@@ -100,6 +150,7 @@
 <body>
   <header>
     <h1>Note App</h1>
+    <button id="theme-toggle" onclick="toggleTheme()">🌙 Theme</button>
   </header>
 
   <section id="main-section">
@@ -121,6 +172,26 @@
   <script>
     let currentTitle = null;
 
+    // THEME HANDLING
+    function applyTheme(theme) {
+      document.body.className = theme;
+      localStorage.setItem("theme", theme);
+      document.getElementById("theme-toggle").textContent = theme === "dark" ? "☀️ Light" : "🌙 Dark";
+    }
+
+    function toggleTheme() {
+      const newTheme = document.body.className === "dark" ? "light" : "dark";
+      applyTheme(newTheme);
+    }
+
+    // Apply stored theme or default to light
+    window.onload = () => {
+      const storedTheme = localStorage.getItem("theme") || "light";
+      applyTheme(storedTheme);
+      showMainSection();
+    };
+
+    // NOTES APP FUNCTIONS
     function getNotes() {
       return JSON.parse(localStorage.getItem("notes")) || {};
     }
@@ -157,12 +228,9 @@
         return;
       }
       let notes = getNotes();
-
-      // If title is changed, delete old title if editing
       if (currentTitle && currentTitle !== title) {
         delete notes[currentTitle];
       }
-
       notes[title] = body;
       setNotes(notes);
       showMainSection();
@@ -186,8 +254,10 @@
 
         const titleEl = document.createElement("strong");
         titleEl.textContent = title;
-        titleEl.className = "Note-title"
-        titleEl.style.cursor = "pointer"; // Optional: Make it clear it's clickable
+        titleEl.style.cursor = "pointer";
+        titleEl.onclick = () => {
+          contentDiv.classList.toggle("hidden");
+        };
 
         const titleBoxEl = document.createElement("div");
         titleBoxEl.className = "title-box";
@@ -198,11 +268,6 @@
         const contentDiv = document.createElement("div");
         contentDiv.className = "note-content hidden";
         contentDiv.textContent = notes[title];
-
-        // Toggle visibility when clicking on the title
-        titleEl.onclick = () => {
-          contentDiv.classList.toggle("hidden");
-        };
 
         // Copy button
         const copyBtn = document.createElement("button");
@@ -231,17 +296,13 @@
         btnBoxEl.appendChild(copyBtn);
         btnBoxEl.appendChild(editBtn);
         btnBoxEl.appendChild(delBtn);
-
         titleBoxEl.appendChild(btnBoxEl);
+
         noteDiv.appendChild(titleBoxEl);
         noteDiv.appendChild(contentDiv);
-
         noteList.appendChild(noteDiv);
       }
     }
-
-    // Initialize
-    showMainSection();
   </script>
 </body>
 </html>
