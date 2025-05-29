@@ -1,8 +1,8 @@
 {
   "name": "io.text.edithtml",
-  "displayName": "EditHTML",
+  "displayName": "HTML-to-APK",
   "version": "1.0.0",
-  "description": "Sample Apache Cordova App for EDIT single page html file on the go.",
+  "description": "Sample Apache Cordova App",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
