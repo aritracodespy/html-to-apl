@@ -10,6 +10,6 @@
     <allow-intent href="https://*/*" />
 
     <platform name="android">
-        <icon src="resources/logo.png" />
+        <icon src="resources/icon.png" />
     </platform>
 </widget>
