@@ -1,4 +1,4 @@
-name: Build Cordova APK
+name: Build APK with logo
 
 on:
   workflow_dispatch:
