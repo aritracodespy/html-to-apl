@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="io.text.edithtml" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>EditHTML</name>
-    <description>Sample Apache Cordova App for EDIT single html file.</description>
+    <description>Sample Apache Cordova App for EDIT single page html file on the go.</description>
     <author email="random.mail.org" href="https://random.domain.org">
         Aritracodespy.
     </author>
