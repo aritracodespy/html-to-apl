@@ -1,7 +1,7 @@
 <?xml version='1.2' encoding='utf-8'?>
-<widget id="io.text.notes" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>NotesJs</name>
-    <description>Sample Apache Cordova App for Notes on the go.</description>
+<widget id="io.ai.chat" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>AiChatBot</name>
+    <description>Sample Apache Cordova App for Chat with on the go.</description>
     <author email="random.mail.org" href="https://random.domain.org">
         Aritracodespy.
     </author>
