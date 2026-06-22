@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.ai.chat" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>OpenBot</name>
-    <description>Sample Apache Cordova App for Chat with on the go.</description>
+<widget id="io.alpha.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>AlphaTracker</name>
+    <description>Sample Apache Cordova App for technical analysis and paper trading</description>
     <author email="random.mail.org" href="https://random.domain.org">
         Aritracodespy.
     </author>
