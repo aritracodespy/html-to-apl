@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AlphaTracker Mobile</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 999px;
+        }
+        
+        .markdown-body h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.25rem;
+            color: #f1f5f9;
+        }
+        .markdown-body h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+        .markdown-body p {
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+        .markdown-body ul {
+            list-style-type: disc;
+            padding-left: 1rem;
+            margin-bottom: 0.75rem;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+        .markdown-body ul li {
+            margin-bottom: 0.2rem;
+        }
+        .markdown-body strong {
+            color: #2dd4bf;
+            font-weight: 600;
+        }
+        .markdown-body hr {
+            border: 0;
+            border-top: 1px solid #334155;
+            margin: 0.75rem 0;
+        }
+    </style>
+</head>
+<body class="bg-[#070a13] text-slate-100 font-sans min-h-screen flex justify-center items-stretch selection:bg-teal-500/30">
+
+    <div class="w-full max-w-md bg-[#0b0f19] flex flex-col min-h-screen relative shadow-2xl border-x border-slate-900/60 pb-20">
+        
+        <header class="bg-[#111827]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
+            <div class="flex items-center space-x-2.5">
+                <div class="bg-gradient-to-tr from-teal-500 to-emerald-500 p-1.5 rounded-lg shrink-0 shadow-md shadow-teal-500/10">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold tracking-tight bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">AlphaTracker</h1>
+                    <p class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Realized PnL: <span id="nav-realized-pnl" class="text-slate-200 font-mono">0.00</span></p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-1.5">
+                <button onclick="refreshPortfolio()" class="active:scale-95 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 p-2 rounded-xl transition-all flex items-center justify-center cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 text-teal-400"></i>
+                </button>
+                <button onclick="toggleSettingsPanel()" class="active:scale-95 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 p-2 rounded-xl transition-all flex items-center justify-center cursor-pointer">
+                    <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
+                </button>
+            </div>
+        </header>
+
+        <div id="settings-dropdown" class="hidden fixed inset-0 bg-[#070a13]/90 backdrop-blur-md z-50 p-6 flex flex-col justify-center items-center">
+            <div class="w-full max-w-xs bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center">
+                        <i data-lucide="sliders" class="w-3.5 h-3.5 mr-1.5 text-teal-400"></i> Engine Endpoint
+                    </h4>
+                    <button onclick="toggleSettingsPanel()" class="text-slate-400 hover:text-slate-200 p-1 bg-slate-800 rounded-lg cursor-pointer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Flask Backend Base URL</label>
+                    <input type="text" id="settings-base-url" placeholder="e.g. http://127.0.0.1:5000" 
+                           class="w-full bg-[#1f2937] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors">
+                    <p class="text-[9px] text-slate-500 mt-1.5 leading-relaxed">Leave empty to default to relative path routing.</p>
+                </div>
+                <button onclick="saveSettingsConfig()" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-semibold text-xs py-2 px-3 rounded-xl shadow-lg transition-all cursor-pointer active:scale-95">
+                    Apply Parameters
+                </button>
+            </div>
+        </div>
+
+        <main class="p-4 flex-1 flex flex-col space-y-4">
+
+            <div id="tab-dashboard" class="mobile-tab-content space-y-4">
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-[#111827] border border-slate-800/80 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight line-clamp-1">Open Value</p>
+                        <h3 id="summary-market-value" class="text-sm font-bold text-slate-100 font-mono mt-1 break-all">0.00</h3>
+                    </div>
+                    <div class="bg-[#111827] border border-slate-800/80 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight line-clamp-1">Unrealized</p>
+                        <h3 id="summary-unrealized-pnl" class="text-sm font-bold text-slate-100 font-mono mt-1 break-all">0.00</h3>
+                    </div>
+                    <div class="bg-[#111827] border border-slate-800/80 rounded-xl p-2.5 shadow-md flex flex-col justify-between">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight line-clamp-1">Net Portfolio</p>
+                        <h3 id="summary-total-pnl" class="text-sm font-bold text-slate-100 font-mono mt-1 break-all">0.00</h3>
+                    </div>
+                </div>
+
+                <div class="bg-[#111827] border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider flex items-center text-slate-300">
+                            <i data-lucide="briefcase" class="w-3.5 h-3.5 mr-1.5 text-teal-400"></i> Active Risk Portfolio
+                        </h2>
+                    </div>
+                    
+                    <div id="portfolio-table-body" class="space-y-2.5 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+                        </div>
+                    
+                    <div id="portfolio-empty" class="hidden text-center py-10 text-slate-500 text-xs">
+                        <i data-lucide="layers" class="w-6 h-6 mx-auto mb-2 opacity-40"></i>
+                        No open core positions detected within active session ledger.
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-trade" class="mobile-tab-content hidden space-y-4">
+                <div class="bg-[#111827] border border-slate-800/80 rounded-2xl p-4 shadow-xl">
+                    <h2 class="text-xs font-bold uppercase tracking-wider mb-4 flex items-center text-slate-300">
+                        <i data-lucide="wallet" class="w-3.5 h-3.5 mr-1.5 text-teal-400"></i> Transmit Order Module
+                    </h2>
+                    <form id="order-form" onsubmit="handleOrderSubmit(event)" class="space-y-3.5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Ticker Symbol</label>
+                            <input type="text" id="order-symbol" required placeholder="e.g. AAPL, BTC-USD, TSLA" 
+                                   class="w-full bg-[#1f2937] border border-slate-700/80 rounded-xl px-3 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors uppercase text-xs font-semibold">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Quantity</label>
+                                <input type="number" id="order-qty" step="any" min="0.000001" required placeholder="0.0"
+                                       class="w-full bg-[#1f2937] border border-slate-700/80 rounded-xl px-3 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors text-xs font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Direction Side</label>
+                                <select id="order-type" class="w-full bg-[#1f2937] border border-slate-700/80 rounded-xl px-2 py-2.5 text-xs font-semibold text-slate-100 focus:outline-none focus:border-teal-500 transition-colors">
+                                    <option value="buy">BUY (Long)</option>
+                                    <option value="sell">SELL (Short)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-teal-900/20 transition-all cursor-pointer text-xs uppercase tracking-wider active:scale-95">
+                            Execute Order State
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="tab-analytics" class="mobile-tab-content hidden space-y-4">
+                <div class="bg-[#111827] border border-slate-800/80 rounded-2xl p-4 shadow-xl space-y-3">
+                    <div class="flex items-center space-x-2 pb-2 border-b border-slate-800/60">
+                        <i data-lucide="cpu" class="w-4 h-4 text-teal-400"></i>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Technical Quant Matrix</h2>
+                    </div>
+                    
+                    <div class="flex items-center gap-1.5">
+                        <input type="text" id="analysis-symbol" placeholder="TICKER" 
+                               class="w-1/3 bg-[#1f2937] border border-slate-700/80 rounded-xl py-2 px-1 text-center text-slate-100 focus:outline-none focus:border-teal-500 font-bold tracking-wider uppercase text-xs">
+                        <select id="analysis-timeframe" class="w-1/3 bg-[#1f2937] border border-slate-700/80 rounded-xl py-2 px-1 text-center text-xs font-semibold text-slate-100 focus:outline-none focus:border-teal-500">
+                            <option value="15m">15 Min</option>
+                            <option value="1d" selected>1 Day</option>
+                            <option value="1wk">1 Week</option>
+                        </select>
+                        <button onclick="runAnalysis()" class="w-1/3 bg-teal-500 hover:bg-teal-600 text-white font-bold text-xs py-2 rounded-xl shadow transition-all cursor-pointer active:scale-95 uppercase tracking-wide">
+                            Compute
+                        </button>
+                    </div>
+
+                    <div id="analysis-trade-actions" class="hidden pt-1.5">
+                        <button onclick="tradeComputedAsset()" class="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-[11px] font-bold py-2 px-3 rounded-xl flex items-center justify-center space-x-1.5 active:scale-95 transition-all shadow cursor-pointer">
+                            <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                            <span>TRADE ASSET NOW (QTY: 1)</span>
+                        </button>
+                    </div>
+
+                    <div id="chart-container" class="h-[180px] w-full relative hidden pt-2">
+                        <canvas id="analysisChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-[#111827] border border-slate-800/80 rounded-2xl p-4 shadow-xl flex-1 flex flex-col">
+                    <div class="flex items-center justify-between border-b border-slate-800/60 pb-2 mb-2">
+                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                            <i data-lucide="terminal" class="w-3.5 h-3.5 mr-1.5 text-emerald-400"></i> Compiled Report
+                        </h3>
+                        <span id="report-timestamp" class="text-[9px] text-slate-500 font-mono"></span>
+                    </div>
+                    <div id="analysis-report-box" class="markdown-body flex-1 overflow-y-auto max-h-[220px] custom-scrollbar text-xs">
+                        <p class="text-slate-500 text-center py-10">Awaiting asset computational array commands.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-ledger" class="mobile-tab-content hidden space-y-4">
+                <div class="bg-[#111827] border border-slate-800/80 rounded-2xl p-4 shadow-xl">
+                    <h2 class="text-xs font-bold uppercase tracking-wider mb-3 flex items-center text-teal-400">
+                        <i data-lucide="history" class="w-3.5 h-3.5 mr-1.5"></i> Execution Logs
+                    </h2>
+                    
+                    <div id="orders-table-body" class="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                        </div>
+                </div>
+            </div>
+
+        </main>
+
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#111827]/95 backdrop-blur-md border-t border-slate-800/80 px-2 py-2 flex justify-around items-center z-40 shadow-2xl">
+            <button onclick="switchMobileTab('dashboard')" id="nav-btn-dashboard" class="flex flex-col items-center justify-center py-1 px-3 text-teal-400 transition-colors cursor-pointer group">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 group-active:scale-90 transition-transform"></i>
+                <span class="text-[9px] font-bold uppercase tracking-wider mt-1">Summary</span>
+            </button>
+            <button onclick="switchMobileTab('trade')" id="nav-btn-trade" class="flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer group">
+                <i data-lucide="arrow-left-right" class="w-5 h-5 group-active:scale-90 transition-transform"></i>
+                <span class="text-[9px] font-bold uppercase tracking-wider mt-1">Trade</span>
+            </button>
+            <button onclick="switchMobileTab('analytics')" id="nav-btn-analytics" class="flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer group">
+                <i data-lucide="pie-chart" class="w-5 h-5 group-active:scale-90 transition-transform"></i>
+                <span class="text-[9px] font-bold uppercase tracking-wider mt-1">Analysis</span>
+            </button>
+            <button onclick="switchMobileTab('ledger')" id="nav-btn-ledger" class="flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer group">
+                <i data-lucide="file-text" class="w-5 h-5 group-active:scale-90 transition-transform"></i>
+                <span class="text-[9px] font-bold uppercase tracking-wider mt-1">Ledger</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <script>
+        let chartInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initializeBaseUrlConfig();
+            lucide.createIcons();
+            refreshPortfolio();
+        });
+
+        function switchMobileTab(targetTabId) {
+            document.querySelectorAll('.mobile-tab-content').forEach(element => {
+                element.classList.add('hidden');
+            });
+            document.getElementById(`tab-${targetTabId}`).classList.remove('hidden');
+
+            ['dashboard', 'trade', 'analytics', 'ledger'].forEach(tab => {
+                const button = document.getElementById(`nav-btn-${tab}`);
+                if(tab === targetTabId) {
+                    button.classList.remove('text-slate-400', 'hover:text-slate-200');
+                    button.classList.add('text-teal-400');
+                } else {
+                    button.classList.remove('text-teal-400');
+                    button.classList.add('text-slate-400', 'hover:text-slate-200');
+                }
+            });
+        }
+
+        function initializeBaseUrlConfig() {
+            const savedUrl = localStorage.getItem('alpha_tracker_base_url') || '';
+            document.getElementById('settings-base-url').value = savedUrl;
+        }
+
+        function toggleSettingsPanel() {
+            const dropdown = document.getElementById('settings-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function saveSettingsConfig() {
+            let urlValue = document.getElementById('settings-base-url').value.trim();
+            if(urlValue.endsWith('/')) {
+                urlValue = urlValue.slice(0, -1);
+            }
+            localStorage.setItem('alpha_tracker_base_url', urlValue);
+            toggleSettingsPanel();
+            refreshPortfolio();
+        }
+
+        function getApiUrl(endpoint) {
+            const baseUrl = localStorage.getItem('alpha_tracker_base_url') || '';
+            if (!baseUrl) return endpoint;
+            
+            const cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+            return `${baseUrl}${cleanEndpoint}`;
+        }
+
+        async function refreshPortfolio() {
+            try {
+                const response = await fetch(getApiUrl('/api/portfolio'));
+                const data = await response.json();
+                updatePortfolioUI(data);
+            } catch (err) {
+                console.error("Critical State Error: Portfolio fetch failure:", err);
+            }
+        }
+
+        async function handleOrderSubmit(e) {
+            e.preventDefault();
+            const symbol = document.getElementById('order-symbol').value;
+            const quantity = parseFloat(document.getElementById('order-qty').value);
+            const orderType = document.getElementById('order-type').value;
+
+            try {
+                const response = await fetch(getApiUrl('/api/place-order'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, quantity, "order-type": orderType })
+                });
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert(`Execution Blocked: ${result.error}`);
+                } else {
+                    alert(result.message || "Order filled and updated within local ledger state.");
+                    document.getElementById('order-form').reset();
+                    refreshPortfolio();
+                    switchMobileTab('dashboard');
+                }
+            } catch (err) {
+                alert(`Network Core Exception: ${err.message}`);
+            }
+        }
+
+        async function runAnalysis() {
+            const symbol = document.getElementById('analysis-symbol').value.trim();
+            const timeframe = document.getElementById('analysis-timeframe').value;
+            const reportBox = document.getElementById('analysis-report-box');
+            
+            if(!symbol) return alert("Validation Failed: Enter active ticker asset string.");
+
+            document.getElementById('analysis-trade-actions').classList.add('hidden');
+            reportBox.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 space-y-2">
+                    <div class="w-6 h-6 border-3 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Computing Array Matrix...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(getApiUrl(`/api/analysis?symbol=${symbol}&timeframe=${timeframe}&chartdata=true`));
+                const data = await response.json();
+
+                if (data.error) {
+                    reportBox.innerHTML = `<p class="text-rose-400 font-mono text-xs p-3 bg-rose-950/20 border border-rose-900/30 rounded-xl">${data.error}</p>`;
+                    document.getElementById('chart-container').classList.add('hidden');
+                    return;
+                }
+
+                reportBox.innerHTML = marked.parse(data.report);
+                document.getElementById('report-timestamp').innerText = `@ ${new Date().toLocaleTimeString()}`;
+                document.getElementById('analysis-trade-actions').classList.remove('hidden');
+
+                if (data.chart_data && !data.chart_data.error) {
+                    renderAnalysisChart(data.chart_data, symbol);
+                } else {
+                    document.getElementById('chart-container').classList.add('hidden');
+                }
+            } catch (err) {
+                reportBox.innerHTML = `<p class="text-rose-400 font-mono text-xs">Fatal network context break: ${err.message}</p>`;
+            }
+        }
+
+        // New feature implementation: Auto-routing for computed assets with a default quantity of 1
+        function tradeComputedAsset() {
+            const symbol = document.getElementById('analysis-symbol').value.trim();
+            if (!symbol) return;
+            
+            document.getElementById('order-symbol').value = symbol;
+            document.getElementById('order-qty').value = "1";
+            document.getElementById('order-type').value = "buy";
+            
+            switchMobileTab('trade');
+            setTimeout(() => { document.getElementById('order-qty').focus(); }, 150);
+        }
+
+        // Modified Close Trade Functionality: Automatically maps exact balancing quantities to target forms
+        function prepareModifyTrade(symbol, currentSide, absoluteQuantity) {
+            document.getElementById('order-symbol').value = symbol;
+            document.getElementById('order-type').value = currentSide === 'long' ? 'sell' : 'buy';
+            document.getElementById('order-qty').value = absoluteQuantity;
+            
+            switchMobileTab('trade');
+            setTimeout(() => { document.getElementById('order-qty').focus(); }, 150);
+        }
+
+        function analyzeTargetAsset(symbol) {
+            document.getElementById('analysis-symbol').value = symbol;
+            switchMobileTab('analytics');
+            runAnalysis();
+        }
+
+        function updatePortfolioUI(data) {
+            const summary = data.summary || {};
+            document.getElementById('nav-realized-pnl').innerText = formatValue(summary.total_realized_pnl);
+            document.getElementById('summary-market-value').innerText = formatValue(summary.total_market_value);
+            
+            const unpnl = summary.total_unrealized_pnl || 0;
+            const unpnlEl = document.getElementById('summary-unrealized-pnl');
+            unpnlEl.innerText = formatValue(unpnl);
+            unpnlEl.className = `text-sm font-bold font-mono mt-1 break-all ${unpnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            const totalPnl = summary.total_pnl || 0;
+            const totalPnlEl = document.getElementById('summary-total-pnl');
+            totalPnlEl.innerText = formatValue(totalPnl);
+            totalPnlEl.className = `text-sm font-bold font-mono mt-1 break-all ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            const pBody = document.getElementById('portfolio-table-body');
+            pBody.innerHTML = '';
+            
+            if (!data.positions || data.positions.length === 0) {
+                document.getElementById('portfolio-empty').classList.remove('hidden');
+            } else {
+                document.getElementById('portfolio-empty').classList.add('hidden');
+                data.positions.forEach(pos => {
+                    const card = document.createElement('div');
+                    card.className = "bg-[#1f2937]/40 border border-slate-800/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 active:bg-[#1f2937]/70 transition-colors";
+                    
+                    const isLong = pos.side === 'long';
+                    const pnlColor = pos.unrealized_pnl >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                    const absQty = Math.abs(pos.quantity);
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="font-bold text-slate-100 text-sm tracking-wide">${pos.symbol}</span>
+                                <span class="inline-block ml-1.5 px-1 py-0.2 text-[8px] uppercase font-extrabold tracking-wider rounded ${isLong ? 'bg-teal-950 text-teal-400 border border-teal-900/50' : 'bg-amber-950 text-amber-500 border border-amber-900/50'}">${pos.side}</span>
+                                <p class="text-[10px] text-slate-400 mt-0.5">Units: <span class="text-slate-200 font-mono font-medium">${absQty}</span> • Avg: <span class="text-slate-200 font-mono">${formatValue(pos.avg_price)}</span></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-slate-400">Current Market</p>
+                                <p class="font-mono text-xs font-semibold text-slate-200">${formatValue(pos.current_price)}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-800/40">
+                            <div>
+                                <span class="text-[9px] font-semibold text-slate-400 uppercase tracking-tight block">Unrealized PnL</span>
+                                <span class="font-mono text-xs font-bold ${pnlColor}">${pos.unrealized_pnl !== null ? formatValue(pos.unrealized_pnl) : 'N/A'} (${pos.unrealized_pnl_pct !== null ? (pos.unrealized_pnl_pct > 0 ? '+' : '') + pos.unrealized_pnl_pct + '%' : ''})</span>
+                            </div>
+                            <div class="flex space-x-1.5">
+                                <button onclick="prepareModifyTrade('${pos.symbol}', '${pos.side}', ${absQty})" title="Close/Modify Position" class="p-1.5 bg-slate-800 rounded-lg border border-slate-700/80 text-amber-400 active:scale-90 transition-transform cursor-pointer">
+                                    <i data-lucide="git-commit" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="analyzeTargetAsset('${pos.symbol}')" title="Analyze Current Market State" class="p-1.5 bg-slate-800 rounded-lg border border-slate-700/80 text-teal-400 active:scale-90 transition-transform cursor-pointer">
+                                    <i data-lucide="line-chart" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    pBody.appendChild(card);
+                });
+            }
+
+            const oBody = document.getElementById('orders-table-body');
+            oBody.innerHTML = '';
+            const orders = data.orders || [];
+            
+            [...orders].reverse().forEach(ord => {
+                const item = document.createElement('div');
+                item.className = "bg-[#1f2937]/30 border border-slate-800/50 rounded-xl p-2.5 flex items-center justify-between text-[11px] font-mono text-slate-300";
+                
+                const isBuy = ord.order_type === 'buy';
+                const pnlValue = ord.realized_pnl || 0;
+
+                item.innerHTML = `
+                    <div class="space-y-0.5">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="font-bold text-slate-100">${ord.symbol}</span>
+                            <span class="text-[9px] uppercase font-bold px-1 rounded ${isBuy ? 'bg-teal-950/80 text-teal-400' : 'bg-rose-950/80 text-rose-400'}">${ord.order_type}</span>
+                        </div>
+                        <p class="text-[9px] text-slate-500">${new Date(ord.timestamp).toLocaleTimeString()} • ID: ${ord.order_id.substring(0,6)}...</p>
+                    </div>
+                    <div class="text-right space-y-0.5">
+                        <p class="font-medium text-slate-200">Qty: ${ord.quantity} @ ${formatValue(ord.fill_price)}</p>
+                        <p class="text-[10px] ${pnlValue > 0 ? 'text-emerald-400' : pnlValue < 0 ? 'text-rose-400' : 'text-slate-500'}">
+                            PnL: ${pnlValue !== 0 ? (pnlValue > 0 ? '+' : '') + formatValue(pnlValue) : '0.00'}
+                        </p>
+                    </div>
+                `;
+                oBody.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        function renderAnalysisChart(chartData, symbol) {
+            const container = document.getElementById('chart-container');
+            container.classList.remove('hidden');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('analysisChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.date.map(d => d.split(' ')[0]),
+                    datasets: [
+                        { label: 'Close', data: chartData.close, borderColor: '#2dd4bf', borderWidth: 2, pointRadius: 0, tension: 0.05 },
+                        { label: 'EMA 21', data: chartData.ema21, borderColor: '#f59e0b', borderWidth: 1, pointRadius: 0, borderDash: [3, 3] },
+                        { label: 'EMA 55', data: chartData.ema55, borderColor: '#3b82f6', borderWidth: 1, pointRadius: 0, borderDash: [2, 2] },
+                        { label: 'EMA 100', data: chartData.ema100, borderColor: '#ec4899', borderWidth: 1, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 9 } }, position: 'top' },
+                        tooltip: { enabled: true, backgroundColor: '#1e293b', padding: 8 }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(30, 41, 59, 0.4)' }, ticks: { color: '#64748b', font: { size: 8 }, maxTicksLimit: 5 } },
+                        y: { grid: { color: 'rgba(30, 41, 59, 0.4)' }, ticks: { color: '#64748b', font: { size: 8 } } }
+                    }
+                }
+            });
+        }
+
+        function formatValue(val) {
+            if (val === null || val === undefined) return "0.00";
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(val);
+        }
+    </script>
+</body>
+</html>
